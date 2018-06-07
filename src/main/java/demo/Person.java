@@ -19,7 +19,6 @@ public class Person {
 
         private String firstName;
 
-        @JsonIgnore
         private String lastName;
 
         private Person() { } // JPA only
