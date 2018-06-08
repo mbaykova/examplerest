@@ -33,7 +33,6 @@ public class PersonRestController {
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public  ResponseEntity<?> test(@RequestBody Person input) {
-        System.out.println("123");
         Person person = new Person(input.getFirstName(), input.getLastName());
         this.personRepository.save(person);
         URI location = ServletUriComponentsBuilder
@@ -43,21 +42,24 @@ public class PersonRestController {
     }
 
     @RequestMapping(value = "/update", method = RequestMethod.PUT)
-    public  ResponseEntity<?> update(@RequestParam String personId, @RequestBody Person input) {
+    public  ResponseEntity<?> update(@RequestParam Long personId, @RequestBody Person input) {
         System.out.println("update");
-        Person person = new Person(input.getFirstName(), input.getLastName());
+        Person person = this.personRepository.findById(personId)
+                .orElseThrow(()-> new PersonNotFoundException(personId));
+        System.out.println("find");
+        person.setFirstName(input.getFirstName());
+        person.setLastName(input.getLastName());
         this.personRepository.save(person);
-        URI location = ServletUriComponentsBuilder
-            .fromCurrentRequest().path("/{id}")
-            .buildAndExpand(personId).toUri();
-        return ResponseEntity.created(location).build();
+        System.out.println("save");
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
     public  ResponseEntity<?> delete(@RequestParam String personId) {
         System.out.println("delete");
-        this.personRepository.delete(this.personRepository.findByFirstName(personId).get());
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        this.personRepository.delete(this.personRepository.findByFirstName(personId)
+                .orElseThrow(()-> new PersonNotFoundException(personId)));
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @GetMapping("/{personId}")
